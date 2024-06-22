@@ -1,0 +1,3 @@
+[submodule "submodules/InventoryManagement.Protos"]
+	path = submodules/InventoryManagement.Protos
+	url = https://github.com/JacobRWebb/InventoryManagement.Protos.git
