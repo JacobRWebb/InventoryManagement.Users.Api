@@ -2,21 +2,43 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"time"
 
-	pb "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/proto/v1/user"
+	UserServiceProto "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/proto/v1/user"
+	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/store/user"
 )
 
 type UserService struct {
-	pb.UnimplementedServiceServer
+	UserServiceProto.UnimplementedUserServiceServer
+	userStore *user.Store
 }
 
-func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	log.Printf("Logged incoming create user request")
-	return &pb.CreateUserResponse{
-		Result: &pb.CreateUserResponse_UserId{
-			UserId: fmt.Sprintf("%s-%s", req.Email, req.Password),
+func NewUserService(us *user.Store) *UserService {
+	s := &UserService{userStore: us}
+
+	return s
+}
+
+func (s *UserService) CreateUser(ctx context.Context, req *UserServiceProto.CreateUserRequest) (*UserServiceProto.CreateUserResponse, error) {
+	go func(begin time.Time) {
+		latency := time.Since(begin)
+		log.Printf("Request processed. Latency: %v", latency)
+	}(time.Now())
+
+	user, err := s.userStore.CreateUser(&user.CreateUser{Email: req.Email, Password: req.Password})
+
+	if err != nil {
+		return &UserServiceProto.CreateUserResponse{
+			Result: &UserServiceProto.CreateUserResponse_Error{
+				Error: err.Error(),
+			},
+		}, err
+	}
+
+	return &UserServiceProto.CreateUserResponse{
+		Result: &UserServiceProto.CreateUserResponse_UserId{
+			UserId: user.Id.String(),
 		},
 	}, nil
 }

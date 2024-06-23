@@ -8,30 +8,34 @@ import (
 
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/config"
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/consul"
-	pb "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/proto/v1/user"
+	UserServiceProto "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/proto/v1/user"
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/service"
+	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/store/user"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/health"
-	healthPB "google.golang.org/grpc/health/grpc_health_v1"
+	"gorm.io/gorm"
 )
 
 type Server struct {
 	cfg          *config.Config
 	grpcServer   *grpc.Server
 	consulClient *consul.Client
+	db           *gorm.DB
 }
 
-func NewServer(cfg *config.Config) (*Server, error) {
+func NewServer(cfg *config.Config, db *gorm.DB) (*Server, error) {
 	consulClient, err := consul.NewClient(cfg.ConsulAddr)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Consul client: %v", err)
 	}
 
+	grpcServer := grpc.NewServer()
+
 	s := &Server{
 		cfg:          cfg,
-		grpcServer:   grpc.NewServer(),
+		grpcServer:   grpcServer,
 		consulClient: consulClient,
+		db:           db,
 	}
 
 	return s, nil
@@ -61,11 +65,11 @@ func (s *Server) runGRPCServer() (err error) {
 		return fmt.Errorf("failed to listen: %v", err)
 	}
 
-	healthServer := health.NewServer()
-	healthPB.RegisterHealthServer(s.grpcServer, healthServer)
-	pb.RegisterServiceServer(s.grpcServer, &service.UserService{})
+	userStore := user.NewStore(s.db)
 
-	healthServer.SetServingStatus("", healthPB.HealthCheckResponse_SERVING)
+	userService := service.NewUserService(userStore)
+
+	UserServiceProto.RegisterUserServiceServer(s.grpcServer, userService)
 
 	if err := s.consulClient.Register(s.cfg); err != nil {
 		return fmt.Errorf("failed to register with Consul: %v", err)

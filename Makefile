@@ -41,3 +41,8 @@ env-example:
 	@echo "Creating .env.example file"
 	@sed 's/=.*/=/' .env > .env.example
 	@echo ".env.example file created."
+
+fetch-latest-submodules:
+	@git submodule update --remote --merge
+	@git add submodules
+	@git commit -m "Updated submodules to latest version."

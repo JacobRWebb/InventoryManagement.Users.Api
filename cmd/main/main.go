@@ -5,6 +5,7 @@ import (
 
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/config"
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/server"
+	"github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/store"
 )
 
 func main() {
@@ -14,7 +15,9 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	srv, err := server.NewServer(cfg)
+	db := store.MustOpen(cfg)
+
+	srv, err := server.NewServer(cfg, db)
 
 	if err != nil {
 		log.Fatalf("There was a problem with getting a new server: %v", err)
