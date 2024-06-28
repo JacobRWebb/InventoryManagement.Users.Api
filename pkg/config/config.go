@@ -30,11 +30,7 @@ func NewConfig() (*Config, error) {
 	v.AddConfigPath("..")
 
 	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return nil, fmt.Errorf(".env file not found: %w", err)
-		} else {
-			return nil, fmt.Errorf("error reading .env file: %w", err)
-		}
+		fmt.Println("No .env file found. Using environment variables.")
 	}
 
 	v.AutomaticEnv()

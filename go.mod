@@ -1,6 +1,6 @@
 module github.com/JacobRWebb/InventoryManagement.Users.Api
 
-go 1.22.3
+go 1.22
 
 require (
 	github.com/go-playground/validator/v10 v10.22.0
