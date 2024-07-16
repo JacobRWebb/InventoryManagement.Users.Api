@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+option go_package = "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/UserProto";
+
+service UserService {
+    // Authentication Methods
+    rpc RegisterUser(RegisterUserRequest) returns (AuthResponse) {}
+    rpc LoginUser(LoginUserRequest) returns (AuthResponse) {}
+    rpc LoginWithOAuth(OAuthLoginRequest) returns (AuthResponse) {}
+    rpc LogoutUser(LogoutRequest) returns (LogoutResponse) {}
+
+    // Token Management
+    rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse) {}
+    rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse) {}
+    
+    // User Profile Management
+    rpc GetUserProfile(GetUserProfileRequest) returns (Profile) {}
+    rpc UpdateUserProfile(UpdateUserProfileRequest) returns (Profile) {}
+
+    // User Management
+    rpc GetUser(GetUserRequest) returns (User) {}
+    rpc ListUsers(ListUsersRequest) returns (ListUserResponse) {}
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+}
+
+enum TokenType {
+    UNKNOWN = 0;
+    ACCESS_TOKEN = 1;
+    REFRESH_TOKEN = 2;
+}
+
+message Profile {
+    string user_id = 1;
+    string full_name = 3;
+    string first_name = 4;
+    string last_name = 5;
+    string avatar_url = 6;
+}
+
+message User {
+    string id = 1;
+    string email = 2;
+    string username = 3;
+    Profile profile = 4;
+    repeated string oauth_providers = 5;
+    bool is_active = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+message RegisterUserRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginUserRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message OAuthLoginRequest {
+    string provider = 1;
+    string code = 2;
+}
+
+message LogoutRequest {
+    string access_token = 1;
+}
+
+message RefreshTokenRequest {
+    string refresh_token = 1;
+}
+
+message RevokeTokenRequest {
+    string token = 1;
+    TokenType token_type_hint = 2;
+}
+
+message GetUserProfileRequest {
+    string user_id = 1;
+}
+
+message UpdateUserProfileRequest {
+    string user_id = 1;
+    Profile profile = 2;
+}
+
+message GetUserRequest {
+    string user_id = 1;
+}
+
+message ListUsersRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message DeleteUserRequest {
+    string user_id = 1;
+}
+
+message AuthResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+    int64 expires_in = 3;
+    string token_type = 4;
+}
+
+message LogoutResponse {
+    bool success = 1;
+}
+
+message RevokeTokenResponse {
+    bool success = 1;
+}
+
+message ListUserResponse {
+    repeated User users = 1;
+    int32 total_count = 2;
+}
+
+message DeleteUserResponse {
+    bool success = 1;
+}

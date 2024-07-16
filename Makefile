@@ -1,6 +1,6 @@
 # Directory definitions
-PROTO_ROOT := submodules/InventoryManagement.Protos
-OUTPUT_ROOT := pkg
+PROTO_ROOT := pkg/api
+OUTPUT_ROOT := pkg/api
 
 # Find all .proto files
 PROTO_FILES := $(shell find $(PROTO_ROOT) -name '*.proto')
@@ -39,18 +39,8 @@ install-proto-plugins:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
-# Clean generated proto files
-clean-proto:
-	rm -rf $(OUTPUT_ROOT)
-
 # Create .env.example file
 env-example:
 	@echo "Creating .env.example file"
 	@sed 's/=.*/=/' .env > .env.example
 	@echo ".env.example file created."
-
-# Fetch latest submodules
-fetch-latest-submodules:
-	@git submodule update --remote --merge
-	@git add submodules
-	@git commit -m "Updated submodules to latest version."
