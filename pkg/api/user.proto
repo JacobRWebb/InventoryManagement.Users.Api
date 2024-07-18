@@ -4,7 +4,7 @@ option go_package = "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/Use
 
 service UserService {
     // Authentication Methods
-    rpc RegisterUser(RegisterUserRequest) returns (AuthResponse) {}
+    rpc RegisterUser(RegisterUserRequest) returns (Empty) {}
     rpc LoginUser(LoginUserRequest) returns (AuthResponse) {}
     rpc LoginWithOAuth(OAuthLoginRequest) returns (AuthResponse) {}
     rpc LogoutUser(LogoutRequest) returns (LogoutResponse) {}
@@ -22,6 +22,8 @@ service UserService {
     rpc ListUsers(ListUsersRequest) returns (ListUserResponse) {}
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
 }
+
+message Empty {}
 
 enum TokenType {
     UNKNOWN = 0;

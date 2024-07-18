@@ -34,7 +34,7 @@ func NewUserService(db *gorm.DB) *UserService {
 	}
 }
 
-func (s *UserService) RegisterUser(ctx context.Context, req *UserProto.RegisterUserRequest) (*UserProto.AuthResponse, error) {
+func (s *UserService) RegisterUser(ctx context.Context, req *UserProto.RegisterUserRequest) (*UserProto.Empty, error) {
 	var existingUser model.User
 	if err := s.db.Where("email = ?", req.GetEmail()).First(&existingUser).Error; err == nil {
 		return nil, status.Error(codes.AlreadyExists, ERR_EMAIL_TAKEN)
@@ -95,12 +95,7 @@ func (s *UserService) RegisterUser(ctx context.Context, req *UserProto.RegisterU
 		return nil, status.Error(codes.Internal, ERR_INTERNAL_TRYAGAIN)
 	}
 
-	return &UserProto.AuthResponse{
-		AccessToken:  authResponse.AccessToken,
-		RefreshToken: authResponse.RefreshToken,
-		ExpiresIn:    authResponse.ExpiresIn,
-		TokenType:    authResponse.TokenType,
-	}, nil
+	return nil, nil
 }
 
 func (s *UserService) LoginUser(ctx context.Context, req *UserProto.LoginUserRequest) (*UserProto.AuthResponse, error) {
