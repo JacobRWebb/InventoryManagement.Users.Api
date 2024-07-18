@@ -8,7 +8,6 @@ import (
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/internal/model"
 	"github.com/JacobRWebb/InventoryManagement.Users.Api/internal/util"
 	UserProto "github.com/JacobRWebb/InventoryManagement.Users.Api/pkg/api"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -58,23 +57,22 @@ func (s *UserService) RegisterUser(ctx context.Context, req *UserProto.RegisterU
 		}
 	}()
 
-	newProfile := &model.Profile{
-		UserId: uuid.New(),
+	newUser := &model.User{
+		Email:    req.GetEmail(),
+		Password: string(hashedPassword),
+		IsActive: true,
 	}
 
-	if err := tx.Create(newProfile).Error; err != nil {
+	if err := tx.Create(newUser).Error; err != nil {
 		tx.Rollback()
 		return nil, status.Error(codes.Internal, ERR_INTERNAL_TRYAGAIN)
 	}
 
-	newUser := &model.User{
-		Email:     req.GetEmail(),
-		Password:  string(hashedPassword),
-		ProfileId: newProfile.UserId,
-		IsActive:  true,
+	newProfile := &model.Profile{
+		UserId: newUser.Id,
 	}
 
-	if err := tx.Create(newUser).Error; err != nil {
+	if err := tx.Create(newProfile).Error; err != nil {
 		tx.Rollback()
 		return nil, status.Error(codes.Internal, ERR_INTERNAL_TRYAGAIN)
 	}
@@ -246,7 +244,7 @@ func (s *UserService) GetUser(ctx context.Context, req *UserProto.GetUserRequest
 	}
 
 	var profile model.Profile
-	if err := s.db.Where("user_id = ?", user.ProfileId).First(&profile).Error; err != nil {
+	if err := s.db.Where("user_id = ?", user.Id).First(&profile).Error; err != nil {
 		return nil, status.Error(codes.NotFound, ERR_USER_NOT_FOUND)
 	}
 
@@ -284,7 +282,7 @@ func (s *UserService) ListUsers(ctx context.Context, req *UserProto.ListUsersReq
 	var protoUsers []*UserProto.User
 	for _, user := range users {
 		var profile model.Profile
-		if err := s.db.Where("user_id = ?", user.ProfileId).First(&profile).Error; err != nil {
+		if err := s.db.Where("user_id = ?", user.Id).First(&profile).Error; err != nil {
 			return nil, status.Error(codes.Internal, ERR_INTERNAL_TRYAGAIN)
 		}
 

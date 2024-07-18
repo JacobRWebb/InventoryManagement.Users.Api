@@ -4,11 +4,10 @@ import "github.com/google/uuid"
 
 type User struct {
 	CommonBase
-	Email          string    `json:"email" gorm:"type:varchar(255);uniqueIndex"`
-	Password       string    `json:"password" gorm:"type:varchar(255)"`
-	ProfileId      uuid.UUID `json:"profile_id" gorm:"type:uuid;not null"`
-	OAuthProviders []string  `json:"oauth_providers" gorm:"type:text[]"`
-	IsActive       bool      `json:"is_active" gorm:"default:false"`
+	Email          string   `json:"email" gorm:"type:varchar(255);uniqueIndex"`
+	Password       string   `json:"password" gorm:"type:varchar(255)"`
+	OAuthProviders []string `json:"oauth_providers" gorm:"type:text[]"`
+	IsActive       bool     `json:"is_active" gorm:"default:false"`
 }
 
 type Profile struct {
