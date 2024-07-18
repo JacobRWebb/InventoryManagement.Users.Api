@@ -181,6 +181,25 @@ func (s *UserService) RevokeToken(ctx context.Context, req *UserProto.RevokeToke
 	return &UserProto.RevokeTokenResponse{Success: true}, nil
 }
 
+func (s *UserService) ValidateToken(ctx context.Context, req *UserProto.ValidateTokenRequest) (*UserProto.ValidateTokenResponse, error) {
+	_, claims, err := util.VerifyToken(req.GetAccessToken())
+
+	if err != nil {
+		return nil, err
+	}
+
+	userId, err := util.GetUserIdFromToken(claims)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserProto.ValidateTokenResponse{
+		UserId:  userId.String(),
+		IsValid: true,
+	}, nil
+}
+
 func (s *UserService) GetUserProfile(ctx context.Context, req *UserProto.GetUserProfileRequest) (*UserProto.Profile, error) {
 	var profile model.Profile
 	if err := s.db.Where("user_id = ?", req.UserId).First(&profile).Error; err != nil {

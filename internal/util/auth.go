@@ -37,6 +37,46 @@ func CreateAuthResponse(userId uuid.UUID) (*model.AuthResponse, error) {
 	return authResponse, nil
 }
 
+func VerifyToken(tokenString string) (*jwt.Token, *jwt.MapClaims, error) {
+	claims := &jwt.MapClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte("your-256-bit-secret"), nil
+	})
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !token.Valid {
+		return nil, nil, status.Error(codes.InvalidArgument, "token is not valid")
+	}
+
+	if exp, ok := (*claims)["exp"].(float64); ok {
+		if time.Now().Unix() > int64(exp) {
+			return nil, nil, status.Error(codes.InvalidArgument, "token is not valid")
+		}
+	}
+
+	return token, claims, nil
+}
+
+func GetUserIdFromToken(claims *jwt.MapClaims) (uuid.UUID, error) {
+	userIdStr, ok := (*claims)["user_id"].(string)
+
+	if !ok {
+		return uuid.Nil, status.Error(codes.InvalidArgument, "token is not valid")
+	}
+
+	userId, err := uuid.Parse(userIdStr)
+
+	if err != nil {
+		return uuid.Nil, status.Error(codes.InvalidArgument, "token is not valid")
+	}
+
+	return userId, nil
+}
+
 func generateTokens(userId uuid.UUID) (string, string, error) {
 	accessToken, err := generateAccessToken(userId)
 	if err != nil {
